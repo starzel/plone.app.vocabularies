@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from Products.CMFCore.utils import getToolByName
-from zope.schema.vocabulary import SimpleVocabulary
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from plone.app.vocabularies import SlicableVocabulary
 from zope.browser.interfaces import ITerms
@@ -10,7 +9,6 @@ from zope.interface import implements, classProvides
 from zope.schema.interfaces import ISource, IContextSourceBinder
 from zope.schema.interfaces import IVocabularyFactory
 from zope.schema.vocabulary import SimpleTerm
-from plone import api
 
 class PrincipalsSource(object):
      """
@@ -90,11 +88,9 @@ class PrincipalsSource(object):
          return True
 
      def search(self, query):
-         import ipdb; ipdb.set_trace()
          return self.users.searchPrincipals(fullname=query)
 
      def get(self, value):
-         import ipdb; ipdb.set_trace()
          return self.users.searchPrincipals(value, None)
 
 class PrincipalsVocabulary(SlicableVocabulary):
@@ -107,11 +103,7 @@ class PrincipalsVocabulary(SlicableVocabulary):
     def fromItems(cls, items, context, *interfaces):
         def lazy(items):
             for item in items:
-                #Todo: Can be done better?
-                try:
-                    principal_id = item['userid']
-                except KeyError:
-                    principal_id = item['groupid']
+                principal_id = item.get('userid') or item.get('groupid')
                 yield cls.createTerm(principal_id, item['principal_type'], context)
         return cls(lazy(items), context, *interfaces)
     fromValues = fromItems
@@ -133,13 +125,10 @@ class PrincipalsVocabulary(SlicableVocabulary):
         return self._users.searchPrincipals(id=value, exact_match=True) and True or False
 
     def getTerm(self, userid):
-        principal = self._users.searchPrincipals(id=userid, exact_match=True)[0]
-        user = None
-        group = None
-        try:
-            user = principal['userid']
-        except KeyError:
-            group = principal['groupid']
+        principals = self._users.searchPrincipals(id=userid, exact_match=True)
+        principal = principals[0]
+        user = principal.get('userid')
+        group = principal.get('groupid')
         if user:
             user_obj = self._users.getUserById(user, None)
             fullname = user_obj.getProperty('fullname', None) or user
@@ -171,7 +160,8 @@ class PrincipalsFactory(object):
 
 
 class PrincipalsSourceQueryView(object):
-
+    """ Just a copy from UsersSourceQueryView. Needs refactor
+    """
     implements(ITerms,
                ISourceQueryView)
 
@@ -195,7 +185,6 @@ class PrincipalsSourceQueryView(object):
         return token
 
     def render(self, name):
-        import ipdb; ipdb.set_trace()
         return self.template(name=name)
 
     def results(self, name):
