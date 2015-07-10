@@ -93,6 +93,11 @@
     />
 
   <utility
+    factory=".principals.PrincipalsFactory"
+    name="plone.app.vocabularies.Principals"
+    />
+
+  <utility
     factory=".catalog.CatalogVocabularyFactory"
     name="plone.app.vocabularies.Catalog"
     />
@@ -164,11 +169,23 @@
       factory=".users.UsersSourceQueryView"
       provides="zope.browser.interfaces.ITerms"
       />
-
   <adapter
       for=".users.UsersSource
            zope.publisher.interfaces.browser.IBrowserRequest"
       factory=".users.UsersSourceQueryView"
+      provides="zope.formlib.interfaces.ISourceQueryView"
+      />
+
+  <adapter
+      for=".principals.PrincipalsSource
+           zope.publisher.interfaces.browser.IBrowserRequest"
+      factory=".principals.PrincipalsSourceQueryView"
+      provides="zope.browser.interfaces.ITerms"
+      />
+  <adapter
+      for=".principals.PrincipalsSource
+           zope.publisher.interfaces.browser.IBrowserRequest"
+      factory=".principals.PrincipalsSourceQueryView"
       provides="zope.formlib.interfaces.ISourceQueryView"
       />
 
